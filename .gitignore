@@ -31,4 +31,5 @@
 *.out
 *.app
 
-Makefile
+/Users/smithn10/5300-Giraffe/Makefile
+**/.idea/workspace.xml
