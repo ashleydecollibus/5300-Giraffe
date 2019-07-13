@@ -1,0 +1,3 @@
+/Users/smithn10/5300-Giraffe/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/Users/smithn10/5300-Giraffe/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/smithn10/5300-Giraffe/cmake-build-debug/CMakeFiles/sql5300.dir
