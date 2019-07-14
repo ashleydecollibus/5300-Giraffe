@@ -325,7 +325,7 @@ Handle HeapTable::insert(const ValueDict *row) {
 }
 
 void HeapTable::update(const Handle handle, const ValueDict *new_values) {
-    //Not implemented.
+    //TO-BE IMPLEMENTED
 }
 
 /*
@@ -348,14 +348,13 @@ Handles *HeapTable::select() {
     Handles *hndls = new Handles();
     BlockIDs *bIDs = file.block_ids();
 
-    for (BlockID i = 1; i <= bIDs->size(); i++) {
-        SlottedPage *s = file.get(i);
-        RecordIDs *rIDs = s->ids();
-        for (RecordID r = 1; r <= rIDs->size(); r++) {
+    for (BlockID bID: *bIDs) {
+        SlottedPage *curr_block = file.get(bID);
+        RecordIDs *rIDs = curr_block->ids();
+        for (RecordID &rID : *rIDs) {
             Handle h;
-            h.first = i;
-            h.second = r;
-            //blockid, recordid
+            h.first = bID;
+            h.second = rID;
             hndls->push_back(h);
         }
     }
@@ -368,16 +367,16 @@ Handles *HeapTable::select() {
 Handles *HeapTable::select(const ValueDict *where) {
     open();
     Handles *handle_list = new Handles(); //hold the return data, is a vector based on the define in storage_engine.h
-    BlockIDs *block_id_list = file.block_ids();
-    for (auto &block_id : *block_id_list) {
-        SlottedPage *curr_block = file.get(block_id);
-        RecordIDs *record_id_list = curr_block->ids();
-        for (auto &record_id : *record_id_list) {
-            Handle temp(block_id, record_id_list->at(record_id));
+    BlockIDs *bIDs = file.block_ids();
+    for (BlockID &bID : *bIDs) {
+        SlottedPage *curr_block = file.get(bID);
+        RecordIDs *rIDs = curr_block->ids();
+        for (RecordID &rID : *rIDs) {
+            Handle temp(bID, rIDs->at(rID));
             handle_list->push_back(temp);
         }
     }
-    delete block_id_list;
+    delete bIDs;
     return handle_list;
 }
 
@@ -405,7 +404,7 @@ ValueDict *HeapTable::project(Handle handle, const ColumnNames *column_names) {
         return curr_row;
     }
     ValueDict *result = new ValueDict();
-    for (auto const &column_name: *column_names) {
+    for (Identifier const &column_name: *column_names) {
         if (curr_row->find(column_name) == curr_row->end()) {
             throw DbRelationError("Table does not contain column: " + column_name + "'");
         }
@@ -493,7 +492,7 @@ ValueDict *HeapTable::unmarshal(Dbt *data) {
     Value value;
     char *bytes = (char *) data->get_data();
     unsigned offset = 0,col_num=0;
-    for (auto const &column_name: column_names) {
+    for (Identifier const &column_name: column_names) {
         ColumnAttribute ca = column_attributes[col_num++];
         value.data_type = ca.get_data_type();
         if (ca.get_data_type() == ColumnAttribute::DataType::INT) {
@@ -505,7 +504,7 @@ ValueDict *HeapTable::unmarshal(Dbt *data) {
             char buffer[DbBlock::BLOCK_SZ];
             memcpy(buffer, bytes + offset, size);
             buffer[size] = '\0';
-            value.s = std::string(buffer);  //Default we assume it's ASCII.
+            value.s = std::string(buffer);
             offset += size;
         } else {
             throw DbRelationError("Only know how to unmarshal INT, TEXT");
@@ -527,7 +526,7 @@ bool test_heap_storage() {
     HeapTable table1("_test_create_drop_cpp", column_names, column_attributes);
     table1.create();
     std::cout << "create ok" << std::endl;
-    table1.drop();  // drop makes the object unusable because of BerkeleyDB restriction -- maybe want to fix this some day
+    table1.drop();
     std::cout << "drop ok" << std::endl;
 
     HeapTable table("_test_data_cpp", column_names, column_attributes);

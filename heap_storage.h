@@ -118,12 +118,13 @@ public:
     virtual BlockIDs *block_ids();
 
     virtual u32 get_last_block_id() { return last; }
-    u32 last;
+    
 
 
 protected:
     std::string dbfilename;
     bool closed;
+    u32 last;
     Db db;
     virtual void db_open(uint flags = 0);
 };
