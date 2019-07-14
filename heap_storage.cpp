@@ -202,12 +202,12 @@ void HeapFile::drop(void) {
 
 void HeapFile::db_open(uint flags) {
 
-    if (closed){
+    if (closed) {
 
         const char *eHome = nullptr;
         _DB_ENV->get_home(&eHome);
-        std::string path = eHome;
-        dbfilename = path + "/" + name + ".db";
+        std::string path = "../";
+        this->dbfilename = path + eHome + "/" + name + ".db";
 
         db.open(nullptr, dbfilename.c_str(), nullptr, DB_RECNO, flags, 0);
         DB_BTREE_STAT *stat;
@@ -216,7 +216,7 @@ void HeapFile::db_open(uint flags) {
         last = stat->bt_ndata;
         closed = false;
     }
-        return;
+    return;
 }
 
 void HeapFile::open(void) {
@@ -491,7 +491,7 @@ ValueDict *HeapTable::unmarshal(Dbt *data) {
     ValueDict *row = new ValueDict();
     Value value;
     char *bytes = (char *) data->get_data();
-    unsigned offset = 0,col_num=0;
+    unsigned offset = 0, col_num = 0;
     for (Identifier const &column_name: column_names) {
         ColumnAttribute ca = column_attributes[col_num++];
         value.data_type = ca.get_data_type();
